@@ -366,8 +366,8 @@ def game():
             p2e+=p_ac[p2t]
             P2['value']=int(p2e)
 
-        cc1=controlfunc[p1c]([x,y,vx,vy,a,p1,p2])
-        cc2=controlfunc[p2c]([x,y,vx,vy,a,p1,p2])
+        cc1=controlfunc[p1c]([x,y,vx,vy,a,p1,p2],1)
+        cc2=controlfunc[p2c]([x,y,vx,vy,a,p1,p2],2)
 
         if cc1<0 and not p1stop and p1>p_width[p1t]:
             p1-=p1v
