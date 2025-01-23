@@ -7,6 +7,10 @@ import random
 from subprocess import run
 import sv_ttk
 import ctypes
+import os
+
+from default_controls import *
+
 ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
 root = Tk()
@@ -28,7 +32,20 @@ p_ex=[   200,         200,      200,     200,     100,       80,       70,     9
 p_cnr=[     1.4,      1.2,      0.9,     1.5,     1.2,       1.2    ,    1   ,  1.1,          0.9 ,              1,      1]
 #p_hit=['pass','pass','pass','pass','sparky()','pass']
 
-controls=['ASD','arrows','model']
+controls=['WASD','arrows']
+controlfunc=[asd,arrow]
+controls_dir = './controls'
+
+def load_controls():
+    for file in os.listdir(controls_dir):
+        if file.endswith('.py'):
+            control_name = file[:-3]
+            module = __import__(f'controls.{control_name}', fromlist=[control_name])
+            controls.append(control_name)
+            controlfunc.append(getattr(module, 'control'))
+
+load_controls()
+print(controls, controlfunc)
 
 def Sparky_app(x):
     global p1ready,p2ready
@@ -165,6 +182,8 @@ def Wizard_app(i):
 
 #p_effe=['']
 p1t=p2t=0
+p1c=0
+p2c=1
 def drawpad():    
     M.coords(p1p,(p1-p_width[p1t],700,p1+p_width[p1t],710))
     M.coords(p2p,(p2-p_width[p2t],90,p2+p_width[p2t],100))
@@ -180,15 +199,21 @@ def todrawpad(x):
     p2t=p_name.index(c2)
     drawpad()
 
+def setcontrol(x):
+    global p1c,p2c
+    p1c=controls.index(C11.get())
+    p2c=controls.index(C22.get())
+
 F1=Frame(root)
 L1=Label(F1,text='  |  '+'⚪'*5)
 C1=Combobox(F1,values=p_name,width=8)
+C1.set(p_name[0])
+C1.bind("<<ComboboxSelected>>",todrawpad)
 
 C11=Combobox(F1,values=controls,width=8)
 C11.set('WASD')
+C11.bind("<<ComboboxSelected>>",setcontrol)
 
-C1.set(p_name[0])
-C1.bind("<<ComboboxSelected>>",todrawpad)
 P1=Progressbar(root,mode='determinate',length=500)
 
 C11.pack(side='left')
@@ -197,12 +222,14 @@ L1.pack(side='left')
 F2=Frame(root)
 L2=Label(F2,text='  |  '+'⚪'*5)
 
-C22=Combobox(F2,values=controls,width=8)
-C22.set('arrows')
-
 C2=Combobox(F2,values=p_name,width=8)
 C2.set(p_name[0])
 C2.bind("<<ComboboxSelected>>",todrawpad)
+
+C22=Combobox(F2,values=controls,width=8)
+C22.set('arrows')
+C22.bind("<<ComboboxSelected>>",setcontrol)
+
 P2=Progressbar(root,mode='determinate',length=500)
 
 C22.pack(side='left')
@@ -276,6 +303,8 @@ def match(ii=5,allrandom=0):
     B1.config(state=NORMAL)
     C1.config(state=NORMAL)
     C2.config(state=NORMAL)
+    C11.config(state=NORMAL)
+    C22.config(state=NORMAL)
     return
 
 def stamp(x,y):
@@ -305,7 +334,7 @@ def presentstar(p,num=1):
     M.delete(coin)
 
 def game():
-    global x,y,vx,vy,a,p1e,p2e,p1ready,p2ready,p1v,p2v,p1stop,p2stop
+    global x,y,vx,vy,a,p1e,p2e,p1ready,p2ready,p1v,p2v,p1stop,p2stop,p1c,p2c
     p1=300
     p2=300
     p1e,p2e,p1ready,p2ready,p1stop,p2stop=0,0,0,0,0,0
@@ -337,20 +366,22 @@ def game():
             p2e+=p_ac[p2t]
             P2['value']=int(p2e)
 
-        
-        if keyboard.is_pressed('a') and not p1stop and p1>p_width[p1t]:
+        cc1=controlfunc[p1c]([x,y,vx,vy,a,p1,p2])
+        cc2=controlfunc[p2c]([x,y,vx,vy,a,p1,p2])
+
+        if cc1<0 and not p1stop and p1>p_width[p1t]:
             p1-=p1v
             v1-=1
             M.move(p1p,-p1v,0)
-        if keyboard.is_pressed('d') and not p1stop and p1<600-p_width[p1t]:
+        if cc1>0 and not p1stop and p1<600-p_width[p1t]:
             p1+=p1v
             v1+=1
             M.move(p1p,p1v,0)
-        if keyboard.is_pressed('4') and not p2stop and p2>p_width[p2t]:
+        if cc2<0 and not p2stop and p2>p_width[p2t]:
             p2-=p2v
             v2-=1
             M.move(p2p,-p2v,0)
-        if keyboard.is_pressed('6') and not p2stop and p2<600-p_width[p2t]:
+        if cc2>0 and not p2stop and p2<600-p_width[p2t]:
             p2+=p2v
             v2+=1
             M.move(p2p,p2v,0)
@@ -453,7 +484,8 @@ def game():
         if sleep_t>0:
             time.sleep(sleep_t)
         else:
-            print(sleep_t,'!')
+            #print(sleep_t,'!')
+            pass
 
 started=False
 def startmatch(event=0):
@@ -465,10 +497,14 @@ def startmatch(event=0):
         return
     C1.set(p_name[p1t])
     C2.set(p_name[p2t])
+    C11.set(controls[p1c])
+    C22.set(controls[p2c])
     F3.forget()
     B1.config(state=DISABLED)
     C1.config(state=DISABLED)
     C2.config(state=DISABLED)
+    C11.config(state=DISABLED)
+    C22.config(state=DISABLED)
     B1.focus_set()
     if ch1.get():
         _thread.start_new_thread(match,(3,1))
