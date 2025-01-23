@@ -204,15 +204,9 @@ def todrawpad(x):
     if C1.get()=='Archer':
         C11.set('WASD')
         setcontrol(0)
-        C11.config(state=DISABLED)
-    else:
-        C11.config(state=NORMAL)
     if C2.get()=='Archer':
         C22.set('arrows')
         setcontrol(0)
-        C22.config(state=DISABLED)
-    else:
-        C22.config(state=NORMAL)
 
 def setcontrol(x):
     global p1c,p2c
