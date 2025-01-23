@@ -7,6 +7,11 @@ import random
 from subprocess import run
 import sv_ttk
 import ctypes
+import os
+import importlib.util
+
+from default_controls import *
+
 ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
 root = Tk()
@@ -26,7 +31,33 @@ p_color=['gray','tan','darkseagreen','blueviolet','peru','skyblue' ,'orchid', 'r
 p_ac=[    0,          0,        0,      0,        0.4,      0.5,      1 ,      0.7  ,         0.8 ,              0,       0]
 p_ex=[   200,         200,      200,     200,     100,       80,       70,     90    ,        100 ,             200,     200]
 p_cnr=[     1.4,      1.2,      0.9,     1.5,     1.2,       1.2    ,    1   ,  1.1,          0.9 ,              1,      1]
-#p_hit=['pass','pass','pass','pass','sparky()','pass']
+
+
+controls=['WASD','arrows']
+dire_ctrl_func=[asd,arrow]
+skil_ctrl_func=[asd_s,arrow_s]
+controls_dir = './controls'
+
+def load_controls():
+    for file in os.listdir(controls_dir):
+        if file.endswith('.py'):
+            try:
+                control_name = file[:-3]
+                file_path = os.path.join(controls_dir, file)
+                spec = importlib.util.spec_from_file_location(control_name, file_path)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                controls.append(control_name)
+                dire_ctrl_func.append(getattr(module, 'control'))
+                skil_ctrl_func.append(getattr(module, 'control_s'))
+            except:
+                pass
+
+try:
+    load_controls()
+except:
+    pass
+print(controls, dire_ctrl_func)
 
 def Sparky_app(x):
     global p1ready,p2ready
@@ -60,9 +91,9 @@ def lightning(x):
         p1ready=1
         for i in range(3):
             M.move(p2p,0,10)
-            time.sleep(1/30)            
+            time.sleep(1/25)            
             M.move(p2p,0,-10)
-            time.sleep(1/30)
+            time.sleep(1/25)
         p1ready=0
         p2stop-=1
     elif x==2:        
@@ -71,9 +102,9 @@ def lightning(x):
         p2ready=1
         for i in range(3):
             M.move(p1p,0,10)
-            time.sleep(1/30)            
+            time.sleep(1/25)            
             M.move(p1p,0,-10)
-            time.sleep(1/30)
+            time.sleep(1/25)
         p2ready=0        
         p1stop-=1
 def Lightning_app(x):
@@ -99,7 +130,7 @@ def aiming(x):
             if keyboard.is_pressed('w'):
                 p1ready=0
                 break
-            time.sleep(1/30)        
+            time.sleep(1/25)        
         p1stop-=1
     elif x==2:
         p2a=300
@@ -115,7 +146,7 @@ def aiming(x):
             if keyboard.is_pressed('8'):
                 p2ready=0
                 break
-            time.sleep(1/30)        
+            time.sleep(1/25)        
         p2stop-=1
     M.delete(aim)
 def Archer_hit(i):
@@ -163,6 +194,8 @@ def Wizard_app(i):
 
 #p_effe=['']
 p1t=p2t=0
+p1c=0
+p2c=1
 def drawpad():    
     M.coords(p1p,(p1-p_width[p1t],700,p1+p_width[p1t],710))
     M.coords(p2p,(p2-p_width[p2t],90,p2+p_width[p2t],100))
@@ -176,24 +209,53 @@ def todrawpad(x):
     
     p1t=p_name.index(c1)
     p2t=p_name.index(c2)
+
     drawpad()
+    if C1.get()=='Archer':
+        C11.set('WASD')
+        setcontrol(0)
+    if C2.get()=='Archer':
+        C22.set('arrows')
+        setcontrol(0)
+
+def setcontrol(x):
+    global p1c,p2c
+    if C1.get()=='Archer':
+        C11.set('WASD')
+    if C2.get()=='Archer':
+        C22.set('arrows')
+    p1c=controls.index(C11.get())
+    p2c=controls.index(C22.get())
 
 F1=Frame(root)
 L1=Label(F1,text='  |  '+'⚪'*5)
 C1=Combobox(F1,values=p_name,width=8)
 C1.set(p_name[0])
 C1.bind("<<ComboboxSelected>>",todrawpad)
+
+C11=Combobox(F1,values=controls,width=8)
+C11.set('WASD')
+C11.bind("<<ComboboxSelected>>",setcontrol)
+
 P1=Progressbar(root,mode='determinate',length=500)
 
+C11.pack(side='left')
 C1.pack(side='left')
 L1.pack(side='left')
 F2=Frame(root)
 L2=Label(F2,text='  |  '+'⚪'*5)
+
 C2=Combobox(F2,values=p_name,width=8)
 C2.set(p_name[0])
 C2.bind("<<ComboboxSelected>>",todrawpad)
+
+C22=Combobox(F2,values=controls,width=8)
+C22.set('arrows')
+C22.bind("<<ComboboxSelected>>",setcontrol)
+
 P2=Progressbar(root,mode='determinate',length=500)
 
+C22.pack(side='left')
 C2.pack(side='left')
 L2.pack(side='left')
 
@@ -214,6 +276,9 @@ ball=M.create_oval(300-10,400-10,300+10,400+10,fill='red',outline='orange',width
 drawpad()
 
 gaming=0
+LOGSTATE=0
+LOGDATA=[]
+
 def match(ii=5,allrandom=0):
     global gaming
     gaming=1    
@@ -261,6 +326,8 @@ def match(ii=5,allrandom=0):
     B1.config(state=NORMAL)
     C1.config(state=NORMAL)
     C2.config(state=NORMAL)
+    C11.config(state=NORMAL)
+    C22.config(state=NORMAL)
     return
 
 def stamp(x,y):
@@ -290,13 +357,14 @@ def presentstar(p,num=1):
     M.delete(coin)
 
 def game():
-    global x,y,vx,vy,a,p1e,p2e,p1ready,p2ready,p1v,p2v,p1stop,p2stop
+    global x,y,vx,vy,a,p1e,p2e,p1ready,p2ready,p1v,p2v,p1stop,p2stop,p1c,p2c
     p1=300
     p2=300
     p1e,p2e,p1ready,p2ready,p1stop,p2stop=0,0,0,0,0,0
     p1v,p2v=p_speed[p1t],p_speed[p2t]
     x,y=300,400
     a=0
+    tick=0
     M.coords(ball,(x-10,y-10,x+10,y+10))
     drawpad()
     vx,vy=5*(2*random.randint(0,1)-1),6*(2*random.randint(0,1)-1)
@@ -321,28 +389,30 @@ def game():
             p2e+=p_ac[p2t]
             P2['value']=int(p2e)
 
+        cc1=dire_ctrl_func[p1c]([x,y,vx,vy,a,p1,p2],1)
+        cc2=dire_ctrl_func[p2c]([x,y,vx,vy,a,p1,p2],2)
 
-        if keyboard.is_pressed('a') and not p1stop and p1>p_width[p1t]:
+        if cc1<0 and not p1stop and p1>p_width[p1t]:
             p1-=p1v
             v1-=1
             M.move(p1p,-p1v,0)
-        if keyboard.is_pressed('d') and not p1stop and p1<600-p_width[p1t]:
+        if cc1>0 and not p1stop and p1<600-p_width[p1t]:
             p1+=p1v
             v1+=1
             M.move(p1p,p1v,0)
-        if keyboard.is_pressed('4') and not p2stop and p2>p_width[p2t]:
+        if cc2<0 and not p2stop and p2>p_width[p2t]:
             p2-=p2v
             v2-=1
             M.move(p2p,-p2v,0)
-        if keyboard.is_pressed('6') and not p2stop and p2<600-p_width[p2t]:
+        if cc2>0 and not p2stop and p2<600-p_width[p2t]:
             p2+=p2v
             v2+=1
             M.move(p2p,p2v,0)
-        if keyboard.is_pressed('s') and p1e>=p_ex[p1t] and not p1ready:
+        if p1e>=p_ex[p1t] and skil_ctrl_func[p1c]([x,y,vx,vy,a,p1,p2],1) and not p1ready:
             keyboard.release('s')
             p1e-=p_ex[p1t]
             exec(p_name[p1t]+'_app(1)')
-        if keyboard.is_pressed('2') and p2e>=p_ex[p2t] and not p2ready:
+        if p2e>=p_ex[p2t] and skil_ctrl_func[p2c]([x,y,vx,vy,a,p1,p2],2) and not p2ready:
             keyboard.release('2')
             p2e-=p_ex[p2t]
             exec(p_name[p2t]+'_app(2)')
@@ -429,11 +499,16 @@ def game():
 
         #root.update()
         #print(0.02-time.time()+s_t)
-        sleep_t=(1/30)-time.time()+s_t
+        tick+=1
+        if LOGSTATE and tick%5==0:
+            LOGDATA.append([x,y,vx,vy,a,p1,p2,v1,v2])
+
+        sleep_t=(1/25)-time.time()+s_t
         if sleep_t>0:
             time.sleep(sleep_t)
         else:
-            print(sleep_t,'!')
+            #print(sleep_t,'!')
+            pass
 
 started=False
 def startmatch(event=0):
@@ -445,10 +520,14 @@ def startmatch(event=0):
         return
     C1.set(p_name[p1t])
     C2.set(p_name[p2t])
+    C11.set(controls[p1c])
+    C22.set(controls[p2c])
     F3.forget()
     B1.config(state=DISABLED)
     C1.config(state=DISABLED)
     C2.config(state=DISABLED)
+    C11.config(state=DISABLED)
+    C22.config(state=DISABLED)
     B1.focus_set()
     if ch1.get():
         _thread.start_new_thread(match,(3,1))
@@ -456,11 +535,16 @@ def startmatch(event=0):
         _thread.start_new_thread(match,())
 
 
-def opengp():
-    run("start D:\\vscodes\\GP", shell=True)
-    time.sleep(0.1)
-    keyboard.write('np666')
-    keyboard.press_and_release('enter')
+def togglelog():
+    global LOGSTATE
+    if LOGSTATE:
+        LOGSTATE=0
+        with open('log.txt','w') as f:
+            f.write(str(LOGDATA))
+        B2.config(text='Log')
+    else:
+        LOGSTATE=1
+        B2.config(text='Loging')
 dark=0
 def themealt():
     global dark
@@ -481,7 +565,7 @@ B1=Button(F3,text='Start',width=20,command=startmatch)
 B1.pack(side='left',padx=2)
 Ch1=Checkbutton(F3,text='All-Random',variable=ch1,onvalue=1,offvalue=0,width=15)
 Ch1.pack(side='left',padx=2)
-B2=Button(F3,text='GP',command=opengp,width=3)
+B2=Button(F3,text='Log',command=togglelog,width=10)
 B2.pack(side='left',padx=2)
 B3=Button(F3,text='🔆',command=themealt,width=3)
 B3.pack(padx=2)
@@ -498,3 +582,5 @@ def forcestop(x):
 root.bind('<Escape>',forcestop)
 root.bind('<Return>',startmatch)
 root.mainloop()
+
+#pyinstaller -F -w pong-N.py
