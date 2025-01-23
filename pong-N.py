@@ -28,6 +28,8 @@ p_ex=[   200,         200,      200,     200,     100,       80,       70,     9
 p_cnr=[     1.4,      1.2,      0.9,     1.5,     1.2,       1.2    ,    1   ,  1.1,          0.9 ,              1,      1]
 #p_hit=['pass','pass','pass','pass','sparky()','pass']
 
+controls=['ASD','arrows','model']
+
 def Sparky_app(x):
     global p1ready,p2ready
     if x==1:
@@ -60,9 +62,9 @@ def lightning(x):
         p1ready=1
         for i in range(3):
             M.move(p2p,0,10)
-            time.sleep(1/30)            
+            time.sleep(1/25)            
             M.move(p2p,0,-10)
-            time.sleep(1/30)
+            time.sleep(1/25)
         p1ready=0
         p2stop-=1
     elif x==2:        
@@ -71,9 +73,9 @@ def lightning(x):
         p2ready=1
         for i in range(3):
             M.move(p1p,0,10)
-            time.sleep(1/30)            
+            time.sleep(1/25)            
             M.move(p1p,0,-10)
-            time.sleep(1/30)
+            time.sleep(1/25)
         p2ready=0        
         p1stop-=1
 def Lightning_app(x):
@@ -99,7 +101,7 @@ def aiming(x):
             if keyboard.is_pressed('w'):
                 p1ready=0
                 break
-            time.sleep(1/30)        
+            time.sleep(1/25)        
         p1stop-=1
     elif x==2:
         p2a=300
@@ -115,7 +117,7 @@ def aiming(x):
             if keyboard.is_pressed('8'):
                 p2ready=0
                 break
-            time.sleep(1/30)        
+            time.sleep(1/25)        
         p2stop-=1
     M.delete(aim)
 def Archer_hit(i):
@@ -181,19 +183,29 @@ def todrawpad(x):
 F1=Frame(root)
 L1=Label(F1,text='  |  '+'⚪'*5)
 C1=Combobox(F1,values=p_name,width=8)
+
+C11=Combobox(F1,values=controls,width=8)
+C11.set('WASD')
+
 C1.set(p_name[0])
 C1.bind("<<ComboboxSelected>>",todrawpad)
 P1=Progressbar(root,mode='determinate',length=500)
 
+C11.pack(side='left')
 C1.pack(side='left')
 L1.pack(side='left')
 F2=Frame(root)
 L2=Label(F2,text='  |  '+'⚪'*5)
+
+C22=Combobox(F2,values=controls,width=8)
+C22.set('arrows')
+
 C2=Combobox(F2,values=p_name,width=8)
 C2.set(p_name[0])
 C2.bind("<<ComboboxSelected>>",todrawpad)
 P2=Progressbar(root,mode='determinate',length=500)
 
+C22.pack(side='left')
 C2.pack(side='left')
 L2.pack(side='left')
 
@@ -214,6 +226,9 @@ ball=M.create_oval(300-10,400-10,300+10,400+10,fill='red',outline='orange',width
 drawpad()
 
 gaming=0
+LOGSTATE=0
+LOGDATA=[]
+
 def match(ii=5,allrandom=0):
     global gaming
     gaming=1    
@@ -297,6 +312,7 @@ def game():
     p1v,p2v=p_speed[p1t],p_speed[p2t]
     x,y=300,400
     a=0
+    tick=0
     M.coords(ball,(x-10,y-10,x+10,y+10))
     drawpad()
     vx,vy=5*(2*random.randint(0,1)-1),6*(2*random.randint(0,1)-1)
@@ -321,7 +337,7 @@ def game():
             p2e+=p_ac[p2t]
             P2['value']=int(p2e)
 
-
+        
         if keyboard.is_pressed('a') and not p1stop and p1>p_width[p1t]:
             p1-=p1v
             v1-=1
@@ -429,7 +445,11 @@ def game():
 
         #root.update()
         #print(0.02-time.time()+s_t)
-        sleep_t=(1/30)-time.time()+s_t
+        tick+=1
+        if LOGSTATE and tick%5==0:
+            LOGDATA.append([x,y,vx,vy,a,p1,p2,v1,v2])
+
+        sleep_t=(1/25)-time.time()+s_t
         if sleep_t>0:
             time.sleep(sleep_t)
         else:
@@ -456,11 +476,16 @@ def startmatch(event=0):
         _thread.start_new_thread(match,())
 
 
-def opengp():
-    run("start D:\\vscodes\\GP", shell=True)
-    time.sleep(0.1)
-    keyboard.write('np666')
-    keyboard.press_and_release('enter')
+def togglelog():
+    global LOGSTATE
+    if LOGSTATE:
+        LOGSTATE=0
+        with open('log.txt','w') as f:
+            f.write(str(LOGDATA))
+        B2.config(text='Log')
+    else:
+        LOGSTATE=1
+        B2.config(text='Loging')
 dark=0
 def themealt():
     global dark
@@ -481,7 +506,7 @@ B1=Button(F3,text='Start',width=20,command=startmatch)
 B1.pack(side='left',padx=2)
 Ch1=Checkbutton(F3,text='All-Random',variable=ch1,onvalue=1,offvalue=0,width=15)
 Ch1.pack(side='left',padx=2)
-B2=Button(F3,text='GP',command=opengp,width=3)
+B2=Button(F3,text='Log',command=togglelog,width=10)
 B2.pack(side='left',padx=2)
 B3=Button(F3,text='🔆',command=themealt,width=3)
 B3.pack(padx=2)
