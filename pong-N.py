@@ -30,7 +30,7 @@ p_color=['gray','tan','darkseagreen','blueviolet','peru','skyblue' ,'orchid', 'r
 p_ac=[    0,          0,        0,      0,        0.4,      0.5,      1 ,      0.7  ,         0.8 ,              0,       0]
 p_ex=[   200,         200,      200,     200,     100,       80,       70,     90    ,        100 ,             200,     200]
 p_cnr=[     1.4,      1.2,      0.9,     1.5,     1.2,       1.2    ,    1   ,  1.1,          0.9 ,              1,      1]
-#p_hit=['pass','pass','pass','pass','sparky()','pass']
+
 
 controls=['WASD','arrows']
 dire_ctrl_func=[asd,arrow]
@@ -199,10 +199,27 @@ def todrawpad(x):
     
     p1t=p_name.index(c1)
     p2t=p_name.index(c2)
+
     drawpad()
+    if C1.get()=='Archer':
+        C11.set('WASD')
+        setcontrol(0)
+        C11.config(state=DISABLED)
+    else:
+        C11.config(state=NORMAL)
+    if C2.get()=='Archer':
+        C22.set('arrows')
+        setcontrol(0)
+        C22.config(state=DISABLED)
+    else:
+        C22.config(state=NORMAL)
 
 def setcontrol(x):
     global p1c,p2c
+    if C1.get()=='Archer':
+        C11.set('WASD')
+    if C2.get()=='Archer':
+        C22.set('arrows')
     p1c=controls.index(C11.get())
     p2c=controls.index(C22.get())
 
