@@ -7,10 +7,22 @@ def arrow(data,x):
     else:
         return 0
 
+def arrow_s(data,x):
+    if keyboard.is_pressed('2'):
+        return 1
+    else:
+        return 0
+
 def asd(data,x):
     if keyboard.is_pressed('a') and not keyboard.is_pressed('d'):
         return -1
     elif keyboard.is_pressed('d') and not keyboard.is_pressed('a'):
+        return 1
+    else:
+        return 0
+    
+def asd_s(data,x):
+    if keyboard.is_pressed('s'):
         return 1
     else:
         return 0

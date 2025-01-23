@@ -7,3 +7,6 @@ def control(state,player):
         return 1  # Move right
     elif x < (p1 if player==1 else p2):
         return -1  # Move left
+    
+def control_s(state,player):
+    return 1

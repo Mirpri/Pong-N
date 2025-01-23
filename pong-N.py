@@ -33,7 +33,8 @@ p_cnr=[     1.4,      1.2,      0.9,     1.5,     1.2,       1.2    ,    1   ,  
 #p_hit=['pass','pass','pass','pass','sparky()','pass']
 
 controls=['WASD','arrows']
-controlfunc=[asd,arrow]
+dire_ctrl_func=[asd,arrow]
+skil_ctrl_func=[asd_s,arrow_s]
 controls_dir = './controls'
 
 def load_controls():
@@ -42,10 +43,11 @@ def load_controls():
             control_name = file[:-3]
             module = __import__(f'controls.{control_name}', fromlist=[control_name])
             controls.append(control_name)
-            controlfunc.append(getattr(module, 'control'))
+            dire_ctrl_func.append(getattr(module, 'control'))
+            skil_ctrl_func.append(getattr(module, 'control_s'))
 
 load_controls()
-print(controls, controlfunc)
+print(controls, dire_ctrl_func)
 
 def Sparky_app(x):
     global p1ready,p2ready
@@ -366,8 +368,8 @@ def game():
             p2e+=p_ac[p2t]
             P2['value']=int(p2e)
 
-        cc1=controlfunc[p1c]([x,y,vx,vy,a,p1,p2],1)
-        cc2=controlfunc[p2c]([x,y,vx,vy,a,p1,p2],2)
+        cc1=dire_ctrl_func[p1c]([x,y,vx,vy,a,p1,p2],1)
+        cc2=dire_ctrl_func[p2c]([x,y,vx,vy,a,p1,p2],2)
 
         if cc1<0 and not p1stop and p1>p_width[p1t]:
             p1-=p1v
@@ -385,11 +387,11 @@ def game():
             p2+=p2v
             v2+=1
             M.move(p2p,p2v,0)
-        if keyboard.is_pressed('s') and p1e>=p_ex[p1t] and not p1ready:
+        if p1e>=p_ex[p1t] and skil_ctrl_func[p1c]([x,y,vx,vy,a,p1,p2],1) and not p1ready:
             keyboard.release('s')
             p1e-=p_ex[p1t]
             exec(p_name[p1t]+'_app(1)')
-        if keyboard.is_pressed('2') and p2e>=p_ex[p2t] and not p2ready:
+        if p2e>=p_ex[p2t] and skil_ctrl_func[p2c]([x,y,vx,vy,a,p1,p2],2) and not p2ready:
             keyboard.release('2')
             p2e-=p_ex[p2t]
             exec(p_name[p2t]+'_app(2)')

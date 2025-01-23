@@ -6,3 +6,9 @@ def control(data,x):
         return -1
     else:
         return 0
+    
+def control_s(data,x):
+    if keyboard.is_pressed('2'):
+        return 1
+    else:
+        return 0

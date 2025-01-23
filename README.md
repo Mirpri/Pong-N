@@ -38,7 +38,7 @@ These values collectively represent the state of the game at a particular moment
 Feed the logged data into your preferred machine learning framework and choose your favorite algorithm to train your model.
 
 ### Load your model
-To load your trained model in Pong Neon, you have you write a python file defining a function named `control`.
+To load your trained model in Pong Neon, you have you write a python file defining 2 functions named `control` and `control_s`.
 
 `control` takes a list and a number as parameter and should return a number value. The parameter is like:
 ```
@@ -47,6 +47,8 @@ To load your trained model in Pong Neon, you have you write a python file defini
 `p` is either 1 or 2, suggesting the player you are operating.
 
 A positive return value means moving the pad left, while a negative return value means moving the game pad left, and zero value mean don't move.
+
+`control_s` takes the same parameter as `control` and should return a bool value. `True` means apply the character's skill, while `False` means don't. This function will be called only when it is possible to apply the skill.
 
 For example:
 ```python
@@ -59,6 +61,8 @@ def control(state,player):
         return -1  # Move left
     else:
         return 0
+def control_s(state,player):
+    return 1
 ```
 In `./controls`, there are two exaples.
 
