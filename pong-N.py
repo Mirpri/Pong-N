@@ -8,6 +8,7 @@ from subprocess import run
 import sv_ttk
 import ctypes
 import os
+import importlib.util
 
 from default_controls import *
 
@@ -40,13 +41,22 @@ controls_dir = './controls'
 def load_controls():
     for file in os.listdir(controls_dir):
         if file.endswith('.py'):
-            control_name = file[:-3]
-            module = __import__(f'controls.{control_name}', fromlist=[control_name])
-            controls.append(control_name)
-            dire_ctrl_func.append(getattr(module, 'control'))
-            skil_ctrl_func.append(getattr(module, 'control_s'))
+            try:
+                control_name = file[:-3]
+                file_path = os.path.join(controls_dir, file)
+                spec = importlib.util.spec_from_file_location(control_name, file_path)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                controls.append(control_name)
+                dire_ctrl_func.append(getattr(module, 'control'))
+                skil_ctrl_func.append(getattr(module, 'control_s'))
+            except:
+                pass
 
-load_controls()
+try:
+    load_controls()
+except:
+    pass
 print(controls, dire_ctrl_func)
 
 def Sparky_app(x):
@@ -572,3 +582,5 @@ def forcestop(x):
 root.bind('<Escape>',forcestop)
 root.bind('<Return>',startmatch)
 root.mainloop()
+
+#pyinstaller -F -w pong-N.py
