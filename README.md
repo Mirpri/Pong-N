@@ -34,6 +34,14 @@ In the `log.txt`, you get a 2D list. Each row is a set of data representing a st
 
 These values collectively represent the state of the game at a particular moment in time.
 
+For consultation:
+```
+board size: 600x800
+player 1: y=700
+player 2: y=100
+origin: left-top corner
+```
+
 ### Train your model
 Feed the logged data into your preferred machine learning framework and choose your favorite algorithm to train your model.
 

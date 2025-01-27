@@ -21,4 +21,4 @@ We value your feedback! If you encounter any issues or have suggestions for futu
 
 Thank you for playing Pong Neon! We hope you enjoy the new features and improvements in this release.
 
-> The zip file contians `./controls` file, which provides additional controls for the game. You can add more, modify it, or play without it.
+> ⚠️ **Note:** The zip file contians `./controls` file, which provides additional controls for the game. You can add more, modify it, or play without it.

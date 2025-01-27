@@ -500,7 +500,7 @@ def game():
         #root.update()
         #print(0.02-time.time()+s_t)
         tick+=1
-        if LOGSTATE and tick%5==0:
+        if LOGSTATE and tick%2==0:
             LOGDATA.append([x,y,vx,vy,a,p1,p2,v1,v2])
 
         sleep_t=(1/25)-time.time()+s_t
